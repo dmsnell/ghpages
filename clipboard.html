@@ -1,0 +1,124 @@
+<html>
+    <head>
+        <title>Clipboard Viewer</title>
+        <style>
+            :root {
+                --fixed-font: 'JetBrains Mono', monospace;
+                --subtly-darker: #ddd;
+            }
+
+            tr td:first-child {
+                vertical-align: top;
+            }
+
+            tr {
+                margin-bottom: 2em;
+            }
+
+            td {
+                max-width: 40vw;
+                padding: 8px;
+            }
+
+            img {
+                max-width: 60vw;
+            }
+
+            tr:nth-child(2n) {
+                background-color: var(--subtly-darker);
+            }
+
+            .mime-type {
+                font-family: var(--fixed-font);
+            }
+
+            .raw-html, .raw-text {
+                font-family: var(--fixed-font);
+                max-width: 60vw;
+                white-space: pre-wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Clipboard Viewer</h1>
+            <p>Paste anywhere to show the contents of the clipboard.</p>
+            <div id="results"></div>
+        </main>
+    </body>
+    <script>
+        const results = document.getElementById('results');
+
+        const stringOf = item => new Promise(resolve => item.getAsString(resolve));
+
+        const addFile = (row, /** @type {DataTransferItem} */ item, /** @type {File} */ file) => {
+            const output = document.createElement('td');
+            output.innerHTML = `${ file.name }: ${ file.size } bytes`;
+            row.appendChild(output);
+
+            switch (item.type) {
+                case 'image/png':
+                case 'image/gif':
+                case 'image/jpeg': {
+                    const preview = document.createElement('img');
+                    preview.setAttribute('src', URL.createObjectURL(file));
+
+                    const previewCell = document.createElement('td');
+                    previewCell.appendChild(preview);
+                    row.appendChild(previewCell);
+                }
+            }
+        };
+
+        const addString = (row, item, s) => {
+
+            switch (item.type) {
+                case 'text/html':
+                    const rawOutput = document.createElement('td');
+                    rawOutput.classList.add('raw-html');
+                    rawOutput.innerText = s;
+                    row.appendChild(rawOutput);
+
+                    const renderedOutput = document.createElement('td');
+                    renderedOutput.innerHTML = s;
+                    row.appendChild(renderedOutput);
+                    break;
+
+                default: {
+                    const output = document.createElement('td');
+                    output.classList.add('raw-text');
+                    output.innerText = s;
+                    row.appendChild(output);
+                }
+            }
+        }
+
+        document.body.addEventListener('paste', async ({clipboardData: data}) => {
+            console.log(data);
+
+            results.innerHTML = '';
+            const table = document.createElement('table');
+            results.appendChild(table);
+
+            [...data.items].forEach(async item => {
+                console.log(item);
+
+                const row = document.createElement('tr');
+                table.appendChild(row);
+
+                const mimeType = document.createElement('td');
+                mimeType.classList.add('mime-type');
+                mimeType.innerHTML = item.type;
+                row.appendChild(mimeType);
+            
+                switch (item.kind) {
+                    case 'file':
+                        return addFile(row, item, item.getAsFile());
+
+                    case 'string':
+                        return addString(row, item, await stringOf(item));
+                }
+            });
+        });
+    </script>
+</html>
