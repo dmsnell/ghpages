@@ -87,7 +87,7 @@
                 default: {
                     const output = document.createElement('td');
                     output.classList.add('raw-text');
-                    output.innerText = s;
+                    output.innerText = JSON.stringify(s, null, 2);
                     row.appendChild(output);
                 }
             }
