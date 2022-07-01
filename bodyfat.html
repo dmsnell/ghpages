@@ -1,0 +1,159 @@
+<html>
+	<head>
+		<title>Body Measurement Calculator</title>
+		<style>
+		.disabled {
+			opacity: 0.5;
+		}
+		</style>
+	</head>
+	<body>
+		<header>
+			<h1>Body fat estimator</h1>
+		</header>
+		<main>
+			<p>
+				<label for="height">Height (in)</label>
+				<input type="number" id="height" name="height" />
+			</p>
+
+			<p>
+				<label for="weight">Weight (lb)</label>
+				<input type="number" id="weight" name="weight" />
+			</p>
+
+			<p>
+				<label for="waist">Waist (in)</label>
+				<input type="number" id="waist" name="waist" />
+			</p>
+
+			<p>
+				<label for="neck">Neck (in)</label>
+				<input type="number" id="neck" name="neck" />
+			</p>
+		</main>
+
+		<footer>
+			<p class="disabled">Fat Percentage: <span id="fat-percentage"></span>%</p>
+			<p class="disabled">Fat: <span id="fat-lbs"></span> lb</p>
+			<p class="disabled">Non-fat: <span id="lean-lbs"></span> lbs</p>
+			<p class="disabled">BMI: <span id="bmi"></span></p>
+			<p class="disabled">Waist percentage: <span id="waist-percentage"></span>%</p>
+		</footer>
+	<script>
+
+const heightInput = document.getElementById( 'height' );
+const weightInput = document.getElementById( 'weight' );
+const waistInput = document.getElementById( 'waist' );
+const neckInput = document.getElementById( 'neck' );
+const allInputs = [ heightInput, weightInput, waistInput, neckInput ];
+
+const fatPercentageReading = document.getElementById( 'fat-percentage' );
+const fatLbsReading = document.getElementById( 'fat-lbs' );
+const leanLbsReading = document.getElementById( 'lean-lbs' );
+const bmiReading = document.getElementById( 'bmi' );
+const waistPercentageReading = document.getElementById( 'waist-percentage' );
+const allReadings = [ fatPercentageReading, fatLbsReading, leanLbsReading, bmiReading, waistPercentageReading ];
+
+for ( const input of allInputs ) {
+	input.addEventListener( 'change', render, { passive: true } );
+	input.addEventListener( 'input', render, { passive: true } );
+}
+
+loadInitialValues();
+
+function jsonParse( input ) {
+	try {
+		return JSON.parse( input );
+	} catch (e) {
+		return null;
+	}
+}
+
+function loadInitialValues() {
+	const loaded = localStorage.getItem( 'values' );
+	if ( ! loaded ) {
+		return;
+	}
+
+	const values = jsonParse( loaded );
+	if ( ! values ) {
+		return;
+	}
+
+	const { height, weight, waist, neck } = values;
+	heightInput.value = height;
+	weightInput.value = weight;
+	waistInput.value = waist;
+	neckInput.value = neck;
+
+	render();
+}
+
+function saveValues() {
+	localStorage.setItem( 'values', JSON.stringify( {
+		height: heightInput.value,
+		weight: weightInput.value,
+		waist: waistInput.value,
+		neck: neckInput.value
+	} ) );
+}
+
+function loadValues() {
+	return [
+		heightInput,
+		weightInput,
+		waistInput,
+		neckInput
+	].map( input => input.value.trim() ? Number( input.value ) : NaN);
+}
+
+function calculate() {
+	const values = loadValues();
+	if ( values.some( value => isNaN( value ) ) ) {
+		return null;
+	}
+
+	const [ height, weight, waist, neck ] = values;
+	const fatPercentage = 86.010 * Math.log10( waist - neck ) - 70.041 * Math.log10( height ) + 36.76;
+
+	return {
+		fatPercentage: fatPercentage,
+		fatLbs: weight * fatPercentage / 100,
+		leanLbs: weight * (100 - fatPercentage) / 100,
+		bmi: 703 * weight / (height * height),
+		waistPercentage: waist / height * 100
+	};
+}
+
+function render() {
+	saveValues();
+	const values = calculate();
+	if ( ! values ) {
+		return disable();
+	}
+
+	enable();
+
+	fatPercentageReading.innerText = values.fatPercentage.toFixed( 2 );
+	fatLbsReading.innerText = values.fatLbs.toFixed( 1 );
+	leanLbsReading.innerText = values.leanLbs.toFixed( 1 );
+	bmiReading.innerText = values.bmi.toFixed( 1 );
+	waistPercentageReading.innerText = values.waistPercentage.toFixed( 2 );
+}
+
+function enable() {
+	for ( const reading of allReadings ) {
+		reading.parentNode.classList.remove( 'disabled' );
+	}
+}
+
+function disable() {
+	for ( const reading of allReadings ) {
+		reading.parentNode.classList.add( 'disabled' );
+	}
+}
+
+	</script>
+	</body>
+</html>
