@@ -1,9 +1,14 @@
 <html>
 	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Body Measurement Calculator</title>
 		<style>
 		.disabled {
 			opacity: 0.5;
+		}
+
+		p span {
+			font-weight: bold;
 		}
 		</style>
 	</head>
@@ -14,22 +19,22 @@
 		<main>
 			<p>
 				<label for="height">Height (in)</label>
-				<input type="number" id="height" name="height" />
+				<input type="text" inputmode="decimal" id="height" name="height" />
 			</p>
 
 			<p>
 				<label for="weight">Weight (lb)</label>
-				<input type="number" id="weight" name="weight" />
+				<input type="text" inputmode="decimal" id="weight" name="weight" />
 			</p>
 
 			<p>
 				<label for="waist">Waist (in)</label>
-				<input type="number" id="waist" name="waist" />
+				<input type="text" inputmode="decimal" id="waist" name="waist" />
 			</p>
 
 			<p>
 				<label for="neck">Neck (in)</label>
-				<input type="number" id="neck" name="neck" />
+				<input type="text" inputmode="decimal" id="neck" name="neck" />
 			</p>
 		</main>
 
