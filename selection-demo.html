@@ -48,10 +48,14 @@ So <strong>bring back</strong> my <em data-count=4>bonny</em> to <del>you</del><
 <strong>Offsets mapped into the text nodes of the <em>serialized HTML output</em>.</strong>
 <pre inert id=html-output></pre>
 
+<strong>Void meta tags inserted as marker positions.</strong>
+<pre inert id=meta-output></pre>
+
 <script>
 const e = document.querySelector( '#editor' );
 const r = document.querySelector( '#raw-output' );
 const h = document.querySelector( '#html-output' );
+const m = document.querySelector( '#meta-output' );
 
 const charsUntil = ( node, offset ) => {
 	const w = document.createTreeWalker( e, NodeFilter.SHOW_TEXT );
@@ -69,6 +73,7 @@ const charsUntil = ( node, offset ) => {
 const update = event => {
 	r.innerText = e.innerHTML;
 	h.innerText = e.innerHTML;
+	m.innerText = e.innerHTML;
 
 	const p = window.getSelection().rangeCount > 0
 		? window.getSelection().getRangeAt(0)
@@ -131,6 +136,14 @@ const update = event => {
 		'<mark id=position-html>' +
 		infix +
 		'</mark>' +
+		suffix
+	);
+
+	m.innerHTML = (
+		prefix +
+		'&lt;meta name="cursor-start" content="user-hash"&gt;' +
+		infix +
+		'&lt;meta name="cursor-end" content="user-hash"&gt;' +
 		suffix
 	);
 
