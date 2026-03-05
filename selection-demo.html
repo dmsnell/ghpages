@@ -5,6 +5,16 @@
 	font-size: 18px;
 }
 
+div#editor {
+	border: 4px solid lightblue;
+	padding: 1em;
+}
+
+small {
+	color: hsl(0 0 40%);
+	font-style: italic;
+}
+
 pre {
 	border: 2px solid lightgray;
 	padding: 1em;
@@ -19,6 +29,11 @@ mark#position-html {
 }
 </style>
 
+<p>Make selections and change the content to see the difference between text mappings and HTML mappings.
+View the source to see one further complication, that parsed DOM does not match HTML strings!
+(<small>Hint: the browser gives no access to the original HTML producing the page</small>)</p>
+
+<p>
 <div id=editor contenteditable>
 My <em data-count=1>bonny</em> lies over the <span>ocean 🌊</span>.<br>
 My <em data-count=2>bonny</em> lies over the <span>sea &#x1f30a</span>.<br>
@@ -26,8 +41,11 @@ My <em data-count=3>bonny</em> lies over the <span>ocean &#x1F30A;</span>.<br>
 So <strong>bring back</strong> my <em data-count=4>bonny</em> to <del>you</del><ins>me</ins>.
 </div>
 
+<p>
+<strong>Offsets in the raw text of the <em>serialized HTML output</em>.</strong>
 <pre inert id=raw-output></pre>
 
+<strong>Offsets mapped into the text nodes of the <em>serialized HTML output</em>.</strong>
 <pre inert id=html-output></pre>
 
 <script>
