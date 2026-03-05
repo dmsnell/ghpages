@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<meta charset=utf8>
+<style>
+* {
+	font-size: 18px;
+}
+
+pre {
+	border: 2px solid lightgray;
+	padding: 1em;
+}
+
+mark#position-raw {
+	border: 1px solid red;
+}
+
+mark#position-html {
+	border: 1px solid green;
+}
+</style>
+
+<div id=editor contenteditable>
+My <em data-count=1>bonny</em> lies over the <span>ocean 🌊</span>.<br>
+My <em data-count=2>bonny</em> lies over the <span>sea &#x1f30a</span>.<br>
+My <em data-count=3>bonny</em> lies over the <span>ocean &#x1F30A;</span>.<br>
+So <strong>bring back</strong> my <em data-count=4>bonny</em> to <del>you</del><ins>me</ins>.
+</div>
+
+<pre inert id=raw-output></pre>
+
+<pre inert id=html-output></pre>
+
+<script>
+const e = document.querySelector( '#editor' );
+const r = document.querySelector( '#raw-output' );
+const h = document.querySelector( '#html-output' );
+
+const charsUntil = ( node, offset ) => {
+	const w = document.createTreeWalker( e, NodeFilter.SHOW_TEXT );
+	let c = 0;
+	while ( w.nextNode() ) {
+		if ( w.currentNode === node ) {
+			return c + offset;
+		} else {
+			c += w.currentNode.data.length;
+		}
+	}
+	return c;
+};
+
+const update = event => {
+	r.innerText = e.innerHTML;
+	h.innerText = e.innerHTML;
+
+	const p = window.getSelection().rangeCount > 0
+		? window.getSelection().getRangeAt(0)
+		: null;
+	if ( null === p ) {
+		return;
+	}
+
+	const startOffset = charsUntil( p.startContainer, p.startOffset );
+	const endOffset = charsUntil( p.endContainer, p.endOffset );
+
+	const node = document.createElement( 'pre' );
+	node.innerText = e.innerHTML.slice( 0, startOffset );
+	let prefix = node.innerHTML;
+	node.innerText = e.innerHTML.slice( startOffset, endOffset );
+	let infix = node.innerHTML;
+	node.innerText = e.innerHTML.slice( endOffset );
+	let suffix = node.innerHTML;
+
+	r.innerHTML = (
+		prefix +
+		'<mark id=position-raw>' +
+		infix +
+		'</mark>' +
+		suffix
+	);
+
+	const html = e.cloneNode(true);
+	const w = document.createTreeWalker( html, NodeFilter.SHOW_TEXT );
+	let c = 0;
+	while ( w.nextNode() ) {
+		const n = w.currentNode;
+		const l = n.data.length;
+		let added = 0;
+
+		if ( c <= startOffset && ( c + l ) > startOffset ) {
+			n.data = n.data.slice( 0, startOffset - c ) + '\u{e000}' + n.data.slice( startOffset - c );
+			added++;
+		}
+
+		if ( c <= endOffset && ( c + l ) > endOffset ) {
+			n.data = n.data.slice( 0, endOffset - c + added ) + '\u{e001}' + n.data.slice( endOffset - c + added );
+			break;
+		}
+
+		c += l;
+	}
+
+	const hStart = html.innerHTML.indexOf( '\u{e000}' );
+	const hEnd   = html.innerHTML.indexOf( '\u{e001}' );
+	node.innerText = html.innerHTML.slice( 0, hStart );
+	prefix = node.innerHTML;
+	node.innerText = html.innerHTML.slice( hStart, hEnd ).replace( '\u{e000}', '' );
+	infix = node.innerHTML;
+	node.innerText = html.innerHTML.slice( hEnd ).replace( '\u{e001}', '' );
+	suffix = node.innerHTML;
+
+	h.innerHTML = (
+		prefix +
+		'<mark id=position-html>' +
+		infix +
+		'</mark>' +
+		suffix
+	);
+
+	console.log( `Selection from ${startOffset} to ${endOffset}` );
+};
+
+e.addEventListener( 'input', update );
+document.addEventListener( 'selectionchange', update );
+update();
+</script>
