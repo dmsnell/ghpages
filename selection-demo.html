@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <meta charset=utf8>
 <style>
-* {
-	font-size: 18px;
-}
-
 div#editor {
 	border: 4px solid lightblue;
 	padding: 1em;
@@ -40,6 +36,7 @@ My <em data-count=2>bonny</em> lies over the <span>sea &#x1f30a</span>.<br>
 My <em data-count=3>bonny</em> lies over the <span>ocean &#x1F30A;</span>.<br>
 So <strong>bring back</strong> my <em data-count=4>bonny</em> to <del>you</del><ins>me</ins>.
 </div>
+<button>Set as innerHTML</button>
 
 <p>
 <strong>Offsets in the raw text of the <em>serialized HTML output</em>.</strong>
@@ -52,10 +49,11 @@ So <strong>bring back</strong> my <em data-count=4>bonny</em> to <del>you</del><
 <pre inert id=meta-output></pre>
 
 <script>
+const b = document.querySelector( 'button' );
 const e = document.querySelector( '#editor' );
-const r = document.querySelector( '#raw-output' );
 const h = document.querySelector( '#html-output' );
 const m = document.querySelector( '#meta-output' );
+const r = document.querySelector( '#raw-output' );
 
 const charsUntil = ( node, offset ) => {
 	const w = document.createTreeWalker( e, NodeFilter.SHOW_TEXT );
@@ -152,5 +150,6 @@ const update = event => {
 
 e.addEventListener( 'input', update );
 document.addEventListener( 'selectionchange', update );
+b.addEventListener( 'click', () => { e.innerHTML = e.innerText; update(); } );
 update();
 </script>
